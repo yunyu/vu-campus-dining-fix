@@ -23,14 +23,19 @@ public class XposedHook implements IXposedHookLoadPackage {
         }
         XposedBridge.log(TAG + "Replacing decodeJSON_others");
         Class<?> classSpecificFunctions = XposedHelpers.findClass(CLASS_SPECIFICFUNCTIONS, lpparam.classLoader);
-        XposedHelpers.findAndHookMethod(classSpecificFunctions, "decodeJSON_others", String.class, String.class, new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod(classSpecificFunctions, "decodeJSON_others", String.class, String.class, new XC_MethodReplacement() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                // XposedBridge.log(TAG + "decodeJSON_others: " + param.args[0] + ", " + param.args[1]);
-                if (param.args[1].equals("pastmidnight")) {
-                    XposedBridge.log(TAG + "Hijacking pastmidnight");
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                try {
                     final JSONArray jsonArray = new JSONObject((String) param.args[0]).getJSONArray((String) param.args[1]);
-                    param.setResult(new String[jsonArray.length()]);
+                    final String[] returnVal = new String[jsonArray.length()];
+                    for (int i = 0; i < returnVal.length; i++) {
+                        Object element = jsonArray.get(i);
+                        returnVal[i] = element == null ? null : element.toString();
+                    }
+                    return returnVal;
+                } catch (Exception e) {
+                    return null;
                 }
             }
         });
