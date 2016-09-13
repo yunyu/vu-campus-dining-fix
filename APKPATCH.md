@@ -84,4 +84,20 @@ Install APKtool, extract the APK, and replace the decodeJSON_others function in 
         return-object v4
     .end method
 
+This bytecode is equivalent to:
+
+    public String[] decodeJSON_others(String s1, String s2) {
+        try {
+            final JSONArray jsonArray = new JSONObject((String) param.args[0]).getJSONArray((String) param.args[1]);
+            final String[] returnVal = new String[jsonArray.length()];
+            for (int i = 0; i < returnVal.length; i++) {
+                Object element = jsonArray.get(i);
+                returnVal[i] = element == null ? null : element.toString();
+            }
+            return returnVal;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 Then repackage the APK using APKTool and re-sign it.
